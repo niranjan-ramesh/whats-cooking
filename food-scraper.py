@@ -45,8 +45,10 @@ def worker(s, pool):
 
 
 pool = ActivePool()
-s = threading.Semaphore(50)
+s = threading.Semaphore(100)
 for i in range(52381):
+    if((i%100) == 0):
+        time.sleep(20)
     t = threading.Thread(target=worker, name=str(i), args=(s, pool))
     t.start()
 

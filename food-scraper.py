@@ -2,6 +2,9 @@ import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
+# for i in range(52379 + 1):
+#     url = 'https://www.food.com/recipe?pn={}'.format(i)
+
 op = webdriver.ChromeOptions()
 op.add_argument('headless')
 
@@ -9,7 +12,7 @@ driver = webdriver.Chrome(executable_path=r"/Users/ninja/Downloads/chromedriver"
 driver.get("https://www.food.com/recipe")
 time.sleep(2)  
 driver.find_element_by_css_selector('.gk-aa-load-more').click()
-scroll_pause_time = 2 
+scroll_pause_time = 0.5
 screen_height = driver.execute_script("return window.screen.height;")   
 i = 1
 

@@ -1,0 +1,42 @@
+{
+    "version": 1,
+    "request": {
+        "url": "https://api.food.com/services/mobile/fdc/search/sectionfront",
+        "method": "GET",
+        "params": {
+            "pn": true,
+            "recordType": true
+        }
+    },
+    "response": {
+        "ctype": "application/json",
+        "tablePath": "$.response.results[*]",
+        "schema": {
+            "title": {
+                "target": "$.title",
+                "type": "string"
+            },
+            "owner": {
+                "target": "$.main_username",
+                "type": "string"
+            },
+            "dish_url": {
+                "target": "$.record_url",
+                "type": "string"
+            },
+            "rating": {
+                "target": "$.main_rating",
+                "type": "string"
+            },
+            "owner_url": {
+                "target": "$.recipe_user_url",
+                "type": "string"
+            },
+            "num_rating": {
+                "target": "$.main_num_ratings",
+                "type": "string"
+            }
+        },
+        "orient": "records"
+    }
+}

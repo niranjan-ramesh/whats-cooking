@@ -89,13 +89,13 @@ running.append(TOTAL % NUM_WORKERS)
 
 print(running)
 
-for i, runs in enumerate(running):
+for index, runs in enumerate(running):
     queries = []
     for j in range(1, runs + 1):
-        pn = (i * 523) + j
+        pn = (index * 523) + j
         query = anime_connector.query('food', pn = str(pn), recordType='Recipe')
         queries.append(query)
-    t = Thread(target=worker, args=(queries, i, ))
+    t = Thread(target=worker, args=(queries, index, ))
     t.start()
     sleep(1)
 

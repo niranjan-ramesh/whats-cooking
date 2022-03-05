@@ -113,7 +113,7 @@ async def fetch_records(queries_to_fetch):
 queries = []
 food_connector = connect("./food", _concurrency=100)
 for i in range(1, 52381):
-    query = food_connector.query('food', pn = str(1), recordType='Recipe')
+    query = food_connector.query('food', pn = str(i), recordType='Recipe')
     queries.append(query)
 
 asyncio.run(fetch_records(queries))

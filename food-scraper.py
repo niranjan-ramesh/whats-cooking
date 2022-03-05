@@ -2,10 +2,16 @@
 # import pandas as pd
 # import time
 # import requests
-# import os
 
-# if not os.path.exists('source'):
-#     os.mkdir('source')
+from threading import Thread
+from time import sleep
+from dataprep.connector import connect
+import asyncio
+import pandas as pd
+import os
+
+if not os.path.exists('source'):
+    os.mkdir('source')
 
 
 # titles = []
@@ -64,20 +70,39 @@
 #     t = Thread(target=worker, args=(i, ))
 #     t.start()
 
-from dataprep.connector import connect
-import asyncio
-import pandas as pd
 
-async def fetch_records(queries):
+NUM_WORKERS = 100
+TOTAL = 52380
+
+async def fetch_records(queries, i):
     results = asyncio.gather(*queries)
     df = pd.concat(await results)
-    df.to_csv('results.csv', index=False)
+    df.to_csv('source/{}.csv'.format(i), index=False)
+
+def worker(queries, i):
+    asyncio.run(fetch_records(queries, i))
 
 anime_connector = connect("./food")
-queries = []
-for i in range(1, 52381):
-    query = anime_connector.query('food', pn = '1', recordType='Recipe')
-    queries.append(query)
 
-asyncio.run(fetch_records(queries))
+running = [TOTAL//NUM_WORKERS] * NUM_WORKERS
+running.append(TOTAL % NUM_WORKERS)
+
+print(running)
+
+for i, runs in enumerate(running):
+    queries = []
+    for j in range(1, runs + 1):
+        pn = (i * 523) + j
+        query = anime_connector.query('food', pn = str(pn), recordType='Recipe')
+        queries.append(query)
+    t = Thread(target=worker, args=(queries, i, ))
+    t.start()
+    sleep(1)
+
+# for i in range(1, 52381):
+#     query = anime_connector.query('food', pn = '1', recordType='Recipe')
+#     queries.append(query)
+
+# asyncio.run(fetch_records(queries))
+# print('blah')
 

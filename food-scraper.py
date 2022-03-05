@@ -74,13 +74,14 @@ if not os.path.exists('source'):
 NUM_WORKERS = 100
 TOTAL = 52380
 
-async def fetch_records(queries, i):
-    results = asyncio.gather(*queries)
+async def fetch_records(queries_to_fetch, i):
+    results = asyncio.gather(*queries_to_fetch)
     df = pd.concat(await results)
     df.to_csv('source/{}.csv'.format(i), index=False)
+    print('Written {} file'.format(i))
 
-def worker(queries, i):
-    asyncio.run(fetch_records(queries, i))
+def worker(queries_to_fetch, i):
+    asyncio.run(fetch_records(queries_to_fetch, i))
 
 anime_connector = connect("./food")
 

@@ -1,5 +1,5 @@
 # from threading import Thread
-# import pandas as pd
+import pandas as pd
 # import time
 # import requests
 
@@ -70,44 +70,46 @@ if not os.path.exists('source'):
 #     t.start()
 
 
-NUM_WORKERS = 100
+NUM_WORKERS = 1000
 TOTAL = 52380
 
-async def fetch_records(query, i):
-    # results = asyncio.gather(*queries_to_fetch)
-    # df = pd.concat(await results)
-    df = await query
+async def fetch_records(queries_to_fetch, i):
+    results = asyncio.gather(*queries_to_fetch)
+    df = pd.concat(await results)
+    # df = await query
     df.to_csv('source/{}.csv'.format(i), index=False)
     print('Written {} file'.format(i))
 
-def worker(i):
-    food_connector = connect("./food")
-    query = food_connector.query('food', pn = str(i), recordType='Recipe')
-    asyncio.run(fetch_records(query, i))
+def worker(queries_to_fetch, i):
+    # food_connector = connect("./food")
+    # query = food_connector.query('food', pn = str(i), recordType='Recipe')
+    asyncio.run(fetch_records(queries_to_fetch, i))
 
 
-# running = [TOTAL//NUM_WORKERS] * NUM_WORKERS
-# running.append(TOTAL % NUM_WORKERS)
-# running = [TOTAL]
+running = [TOTAL//NUM_WORKERS] * NUM_WORKERS
+running.append(TOTAL % NUM_WORKERS)
+running = [TOTAL]
 
 # print(running)
 
-# for index, runs in enumerate(running):
-#     queries = []
-#     for j in range(1, runs + 1):
-#         pn = (index * 523) + j
-#         query = anime_connector.query('food', pn = str(pn), recordType='Recipe')
-#         queries.append(query)
-#     t = Thread(target=worker, args=(queries, index, ))
-#     t.start()
-#     sleep(1)
-
-for index in range(1, TOTAL + 1):
-    if((index%100) == 0):
-        sleep(5)
-    # query = anime_connector.query('food', pn = str(i), recordType='Recipe')
-    t = Thread(target=worker, args=(index, ))
+for index, runs in enumerate(running):
+    if((index % 100) == 0):
+        sleep(40)
+    queries = []
+    for j in range(1, runs + 1):
+        pn = (index * (TOTAL//NUM_WORKERS)) + j
+        food_connector = connect("./food")
+        query = food_connector.query('food', pn = str(pn), recordType='Recipe')
+        queries.append(query)
+    t = Thread(target=worker, args=(queries, index, ))
     t.start()
+
+# for index in range(1, TOTAL + 1):
+#     if((index%100) == 0):
+#         sleep(5)
+#     # query = anime_connector.query('food', pn = str(i), recordType='Recipe')
+#     t = Thread(target=worker, args=(index, ))
+#     t.start()
 
 # for i in range(1, 52381):
 #     query = anime_connector.query('food', pn = '1', recordType='Recipe')

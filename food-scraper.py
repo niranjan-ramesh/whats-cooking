@@ -88,9 +88,8 @@ def worker(queries_to_fetch, i):
 
 running = [TOTAL//NUM_WORKERS] * NUM_WORKERS
 running.append(TOTAL % NUM_WORKERS)
-running = [TOTAL]
 
-# print(running)
+print(running)
 
 for index, runs in enumerate(running):
     if((index % 100) == 0):

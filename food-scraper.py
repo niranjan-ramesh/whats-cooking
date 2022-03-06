@@ -1,7 +1,8 @@
 # from threading import Thread
 import pandas as pd
 # import time
-# import requests
+import requests
+import math
 
 from threading import Thread
 from time import sleep
@@ -77,9 +78,8 @@ async def fetch_records(queries_to_fetch):
     results = asyncio.gather(*queries_to_fetch)
     df = pd.concat(await results)
     # df = await query
-    df.to_csv('result.csv', index=False)
+    return df
     # print('Written {} file'.format(i))
-    print('Written file')
 
 # def worker(queries_to_fetch, i):
 #     # food_connector = connect("./food")
@@ -110,12 +110,20 @@ async def fetch_records(queries_to_fetch):
 #     # query = anime_connector.query('food', pn = str(i), recordType='Recipe')
 #     t = Thread(target=worker, args=(index, ))
 #     t.start()
-queries = []
 food_connector = connect("./food", _concurrency=100)
-for i in range(1, 52381):
-    query = food_connector.query('food', pn = str(1), recordType='Recipe')
+
+response = requests.get('https://api.food.com/services/mobile/fdc/search/sectionfront?recordType=Recipe')
+
+total_num = int(response.json()['response']['totalResultsCount'])
+total_pages = math.ceil(total_num/10)
+
+queries = []
+
+for i in range(1, total_pages + 1):
+    query = food_connector.query('food', pn = str(i), recordType='Recipe')
     queries.append(query)
 
-asyncio.run(fetch_records(queries))
-# print('blah')
+df = asyncio.run(fetch_records(queries))
+df.to_csv('result.csv', index=False)
+print('Written file')
 

@@ -2,3 +2,4 @@ dataprep
 asyncio
 pandas
 requests
+webdriver_manager

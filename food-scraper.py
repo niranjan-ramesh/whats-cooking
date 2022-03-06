@@ -118,7 +118,7 @@ def worker(n, tot_requests):
     ratings = []
     owner_urls = []
     num_ratings = []
-    for j in tot_requests:
+    for j in range(1, tot_requests + 1):
         pn = (n * (TOTAL//NUM_WORKERS) + j)
         payload = {'recordType': 'Recipe', 'pn': str(pn)}
         URL = 'https://api.food.com/services/mobile/fdc/search/sectionfront'

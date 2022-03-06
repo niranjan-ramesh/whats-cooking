@@ -141,6 +141,7 @@ def worker(n, tot_requests):
         'num_ratings': num_ratings
     })
     df.to_csv('source/{}.csv'.format(n))
+    print('Writing {} files'.format(n))
 
 
 queries = []

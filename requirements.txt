@@ -1,3 +1,4 @@
 dataprep
 asyncio
 pandas
+requests

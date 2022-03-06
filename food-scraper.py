@@ -1,7 +1,7 @@
 # from threading import Thread
 import pandas as pd
 # import time
-# import requests
+import requests
 
 from threading import Thread
 from time import sleep
@@ -87,8 +87,8 @@ async def fetch_records(queries_to_fetch):
 #     asyncio.run(fetch_records(queries_to_fetch, i))
 
 
-# running = [TOTAL//NUM_WORKERS] * NUM_WORKERS
-# running.append(TOTAL % NUM_WORKERS)
+running = [TOTAL//NUM_WORKERS] * NUM_WORKERS
+running.append(TOTAL % NUM_WORKERS)
 
 # print(running)
 
@@ -110,11 +110,48 @@ async def fetch_records(queries_to_fetch):
 #     # query = anime_connector.query('food', pn = str(i), recordType='Recipe')
 #     t = Thread(target=worker, args=(index, ))
 #     t.start()
+
+def worker(n, tot_requests):
+    titles = []
+    owners = []
+    dish_urls = []
+    ratings = []
+    owner_urls = []
+    num_ratings = []
+    for j in tot_requests:
+        pn = (n * (TOTAL//NUM_WORKERS) + j)
+        payload = {'recordType': 'Recipe', 'pn': str(pn)}
+        URL = 'https://api.food.com/services/mobile/fdc/search/sectionfront'
+        response = requests.get(URL, params=payload)
+        data = response.json()
+        results = data['response']['results']
+        for dish in results:
+            titles.append(dish['title'])
+            owners.append(dish['main_username'])
+            dish_urls.append(dish['record_url'])
+            ratings.append(dish['main_rating'])
+            owner_urls.append(dish['recipe_user_url'])
+            num_ratings.append(dish['main_num_ratings'])
+    df = pd.DataFrame({
+        'titles': titles,
+        'owners': owners,
+        'dish_urls': dish_urls,
+        'ratings': ratings,
+        'owner_urls': owner_urls,
+        'num_ratings': num_ratings
+    })
+    df.to_csv('source/{}.csv'.format(n))
+
+
 queries = []
 food_connector = connect("./food", _concurrency=100)
-for i in range(1, 52381):
-    query = food_connector.query('food', pn = str(i), recordType='Recipe')
-    queries.append(query)
+for index, runs in enumerate(running): # range(1, 52381):
+    if((index%100)==0):
+        sleep(5)
+    t = Thread(target=worker, args=(index, runs, ))
+    t.start()
+    # query = food_connector.query('food', pn = str(i), recordType='Recipe')
+    # queries.append(query)
 
 asyncio.run(fetch_records(queries))
 # print('blah')

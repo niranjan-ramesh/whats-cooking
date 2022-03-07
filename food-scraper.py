@@ -4,7 +4,6 @@ import pandas as pd
 import requests
 import math
 
-from threading import Thread
 from time import sleep
 from dataprep.connector import connect
 import asyncio
@@ -27,19 +26,28 @@ response = requests.get('https://api.food.com/services/mobile/fdc/search/section
 
 total_num = int(response.json()['response']['totalResultsCount'])
 total_pages = math.ceil(total_num/10)
-
-result = empty dataframe
-batch_size = 2000
+print(total_pages)
+result = pd.DataFrame()
+orig_batch_size = 500
+batch_size = orig_batch_size
 queries = []
+
 for i in range(1, total_pages + 1):
     if(batch_size == 0):
         df = asyncio.run(fetch_records(queries))
         result = result.append(df)
+        print(result.shape)
         queries = []
-        batch_size = 2000
+        batch_size = orig_batch_size
+        sleep(0.5)
     query = food_connector.query('food', pn = str(i), recordType='Recipe')
     queries.append(query)
+    batch_size = batch_size - 1
+    # print(batch_size)
 
+df = asyncio.run(fetch_records(queries))
+result = result.append(df)
+print(result.shape)
 result.to_csv('result.csv', index=False)
 # print('Written file')
 

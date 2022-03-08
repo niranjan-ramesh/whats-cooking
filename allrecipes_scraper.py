@@ -94,6 +94,7 @@ for i in range(1, batches+1):
     time.sleep(5)
     if(extracted_df.shape[0] == 0):
         break
+result_df['id'] = result_df.index
 print(f"final shape {result_df.shape}")
 result_df.to_csv('allrecipes.csv', index=False)
 

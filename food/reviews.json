@@ -1,35 +1,31 @@
 {
     "version": 1,
     "request": {
-        "url": "https://api.food.com/services/mobile/fdc/search/sectionfront",
+        "url": "https://api.food.com/external/v1/recipes/{recipeId}/feed/reviews",
         "method": "GET",
         "params": {
-            "pn": true,
-            "recordType": true
+            "pn": true
+            
         }
     },
     "response": {
         "ctype": "application/json",
-        "tablePath": "$.response.results[*]",
+        "tablePath": "$.data.items[*]",
         "schema": {
-            "recipe_id": {
-                "target": "$.recipe_id",
-                "type": "string"
-            },
-            "title": {
-                "target": "$.title",
-                "type": "string"
-            },
-            "owner": {
-                "target": "$.main_username",
-                "type": "string"
-            },
-            "dish_url": {
-                "target": "$.record_url",
-                "type": "string"
-            },
             "rating": {
-                "target": "$.main_rating",
+                "target": "$.rating",
+                "type": "string"
+            },
+            "review_text": {
+                "target": "$.text",
+                "type": "string"
+            },
+            "id": {
+                "target": "$.id",
+                "type": "string"
+            },
+            "memberName": {
+                "target": "$.memberName",
                 "type": "string"
             },
             "owner_url": {

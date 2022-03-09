@@ -1,5 +1,6 @@
 {
     "tables": [
-        "food"
+        "food",
+        "reviews"
     ]
 }

@@ -32,6 +32,7 @@ orig_batch_size = 500
 batch_size = orig_batch_size
 queries = []
 
+
 for i in range(1, total_pages + 1):
     if(batch_size == 0):
         df = asyncio.run(fetch_records(queries))
@@ -49,5 +50,6 @@ df = asyncio.run(fetch_records(queries))
 result = result.append(df)
 print(result.shape)
 result.to_csv('result.csv', index=False)
-# print('Written file')
+
+
 

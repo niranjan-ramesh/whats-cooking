@@ -76,6 +76,4 @@ for url in df2:
         recipes_df = recipes_df.append(recipe_data, ignore_index=True)
         count = count +1
 
-    val = [i for i in range(df1.shape[0])]
-    recipes_df['id'] = val
-    recipes_df.to_csv('dish_recipes.csv',encoding='utf-8',index=False)
+recipes_df.to_csv('dish_recipes3.csv',encoding='utf-8',index=False)

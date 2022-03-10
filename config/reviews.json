@@ -37,6 +37,10 @@
 	    "review_date":{
 		"target": "$.udf.publish_date",
                 "type": "string"
+	    },
+	    "id":{
+		"target": "$.udf.reviewed_item.udf.cms_id",
+                "type": "string"
 	    }
         },
         "orient": "records"

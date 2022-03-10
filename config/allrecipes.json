@@ -1,0 +1,37 @@
+{
+    "version": 1,
+    "request": {
+        "url": "https://www.allrecipes.com/element-api/content-proxy/faceted-searches-load-more?search=",
+        "method": "GET",
+        "params": {
+            "page": false,
+            "pageSize": false
+        },
+        "pagination": {
+            "type": "page",
+            "pageKey": "page",
+            "limitKey": "pageSize",
+            "maxCount": 5000000
+        } 
+             
+    },
+    "response": {
+        "ctype": "application/json",
+        "tablePath": "$.[*]",
+        "schema": {
+            "hasNext": {
+                "target": "$.hasNext",
+                "type": "boolean"
+            },
+            "html": {
+                "target": "$.html",
+                "type": "string"
+            },
+            "totalResults": {
+                "target": "$.totalResults",
+                "type": "int"
+            }
+        },
+        "orient": "records"
+    }
+}

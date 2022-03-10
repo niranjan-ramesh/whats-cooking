@@ -1,0 +1,42 @@
+{
+    "version": 1,
+    "request": {
+        "url": "https://api.food.com/external/v1/recipes/{recipeId}/feed/reviews",
+        "method": "GET",
+        "params": {
+            "pn": true
+            
+        }
+    },
+    "response": {
+        "ctype": "application/json",
+        "tablePath": "$.data.items[*]",
+        "schema": {
+            "rating": {
+                "target": "$.rating",
+                "type": "string"
+            },
+            "review_text": {
+                "target": "$.text",
+                "type": "string"
+            },
+            "id": {
+                "target": "$.id",
+                "type": "string"
+            },
+            "memberName": {
+                "target": "$.memberName",
+                "type": "string"
+            },
+            "owner_url": {
+                "target": "$.recipe_user_url",
+                "type": "string"
+            },
+            "num_rating": {
+                "target": "$.main_num_ratings",
+                "type": "string"
+            }
+        },
+        "orient": "records"
+    }
+}

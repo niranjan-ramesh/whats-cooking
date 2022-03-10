@@ -12,6 +12,10 @@
         "ctype": "application/json",
         "tablePath": "$.response.results[*]",
         "schema": {
+            "recipe_id": {
+                "target": "$.recipe_id",
+                "type": "string"
+            },
             "title": {
                 "target": "$.title",
                 "type": "string"

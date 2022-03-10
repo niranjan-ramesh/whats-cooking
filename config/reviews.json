@@ -1,0 +1,48 @@
+{
+    "version": 1,
+    "request": {
+        "url": "https://www.allrecipes.com/element-api/content-proxy/getreviewsbycontent?ofContent[withId][withGraphId]=cms/onecms_posts_alrcom_{num}",
+        "method": "GET",
+        "params": {
+            	"renderTemplate": true,
+            	"type": true,
+		"itemsPerPage": true,
+		"itemsToRender": true,
+		"getUserEndpoint": true,
+		"postReactionEndpoint": true,
+		"postGenerateSignedUrlEndpoint": true,
+		"postFeedbackPhotoUploadEndpoint": true,
+		"contentType": true,
+		"url": true,
+		"page": true,
+		"ofContent[brand]": "alrcom"
+        }             
+    },
+    "response": {
+        "ctype": "application/json",
+        "tablePath": "$.data.allReviewsByRecency.results[*]",
+        "schema": {
+	    "review_text": {
+                "target": "$.udf.user_text",
+                "type": "string"
+            },
+            "username": {
+                "target": "$.user.displayName",
+                "type": "string"
+            },
+	    "rating": {
+                "target": "$.udf.rating_five_star",
+                "type": "string"
+            },
+	    "review_date":{
+		"target": "$.udf.publish_date",
+                "type": "string"
+	    },
+	    "id":{
+		"target": "$.udf.reviewed_item.udf.cms_id",
+                "type": "string"
+	    }
+        },
+        "orient": "records"
+    }
+}

@@ -1,0 +1,7 @@
+dataprep
+asyncio
+pandas
+requests
+matplotlib
+dataprep
+beautifulsoup4

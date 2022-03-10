@@ -2,4 +2,6 @@ dataprep
 asyncio
 pandas
 requests
-webdriver_manager
+matplotlib
+dataprep
+beautifulsoup4

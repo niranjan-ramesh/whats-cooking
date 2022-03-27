@@ -1,6 +1,8 @@
 {
     "tables": [
         "allrecipes",
-	"reviews"
+	"reviews",
+	"food",
+	"food_reviews"
     ]
 }

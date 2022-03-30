@@ -28,12 +28,8 @@
                 "target": "$.memberName",
                 "type": "string"
             },
-            "owner_url": {
-                "target": "$.recipe_user_url",
-                "type": "string"
-            },
-            "num_rating": {
-                "target": "$.main_num_ratings",
+            "recipe_id": {
+                "target": "$.recipeId",
                 "type": "string"
             }
         },

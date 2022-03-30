@@ -20,7 +20,7 @@ async def fetch_records(queries_to_fetch):
     df = pd.concat(await results)
     return df
 
-food_connector = connect("./config", _concurrency=100)
+food_connector = connect("./config", _concurrency=75)
 
 response = requests.get('https://api.food.com/services/mobile/fdc/search/sectionfront?recordType=Recipe')
 
@@ -50,6 +50,5 @@ df = asyncio.run(fetch_records(queries))
 result = result.append(df)
 print(result.shape)
 result.to_csv('result.csv', index=False)
-
 
 

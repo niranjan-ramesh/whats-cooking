@@ -34,7 +34,7 @@ def scrape_recipe(URL):
     prep_time, ingredients, recipe, nutrients = get_data(page_source)
     return (prep_time, ingredients, recipe, nutrients)
 
-df = pd.read_csv('result.csv')
+df = pd.read_csv('output_result.csv')
 start = 0
 end = 500000
 rec_id = df['recipe_id'][start:end]

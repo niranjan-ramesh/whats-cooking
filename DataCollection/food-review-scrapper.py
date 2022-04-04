@@ -11,7 +11,7 @@ async def fetch_records(queries_to_fetch):
         df = pd.concat(await results)
         return df
 
-df = pd.read_csv('result.csv')
+df = pd.read_csv('output_result.csv')
 start = 0
 end = 500000
 rec_id = df['recipe_id'][start:end]

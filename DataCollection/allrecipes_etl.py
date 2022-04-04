@@ -28,7 +28,7 @@ for filename in all_files:
     df['review_text'] = rev.apply(rev_text).to_frame()
     li.append(df)
 
-all_recipe_files = glob.glob("output_dishrec*.csv")
+all_recipe_files = glob.glob("dish_recipes*.csv")
 for recipes in all_recipe_files:
     rec_df = pd.read_csv(recipes)
     dish.append(rec_df)

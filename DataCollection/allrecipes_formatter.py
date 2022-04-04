@@ -133,5 +133,5 @@ allrecdfin = allrecdf[['recipe_name', 'recipe_id', 'minutes', 'contributor_id', 
 dfrev = dfrev.rename(columns={"username":"user_id","review_text":"review"})
 revfinal = dfrev[['user_id','recipe_id','rating','review']]
 
-allrecdfin.to_csv('full_allrecipes.csv',encoding='utf-8',index=False)
-revfinal.to_csv('full_allrecipes_reviews.csv',encoding='utf-8',index=False)
+allrecdfin.to_csv('temp/full_allrecipes.csv',encoding='utf-8',index=False)
+revfinal.to_csv('temp/full_allrecipes_reviews.csv',encoding='utf-8',index=False)

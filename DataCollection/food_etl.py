@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import numpy as np
+import glob
 
 useless_words = ['bag'\
 ,'box'\
@@ -58,9 +59,17 @@ useless_words = ['bag'\
 ,'whole'
 ]
 
-dfid = pd.read_csv('complete_food_full_dataset.csv')
+dfid = pd.read_csv('temp/complete_food_full_dataset.csv')
 dfr = pd.read_csv('output_result.csv')
-dfrev = pd.read_csv('food_reviews_full_dataset.csv')
+all_files = glob.glob('temp/food_reviews_full_dataset*.csv')
+li = []
+
+for filename in all_files:
+    df = pd.read_csv(filename, index_col=None, header=0)
+    li.append(df)
+
+dfrev = pd.concat(li, axis=0, ignore_index=True)
+
 val = dfid['prep_time'].str.split(':').str[1]
 dfid.drop("prep_time", axis=1, inplace=True)
 
@@ -189,5 +198,5 @@ finaldf = dfid[['recipe_name', 'recipe_id', 'minutes', 'contributor_id', 'nutrit
 dfrev = dfrev.rename(columns={"id":"user_id","review_text":"review"})
 revfinal = dfrev[['user_id','recipe_id','rating','review']]
 
-finaldf.to_csv('full_food.csv',encoding='utf-8',index=False)
-revfinal.to_csv('user_interactions.csv',encoding='utf-8',index=False)
+finaldf.to_csv('temp/full_food.csv',encoding='utf-8',index=False)
+revfinal.to_csv('temp/user_interactions.csv',encoding='utf-8',index=False)

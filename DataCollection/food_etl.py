@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import numpy as np
+import glob
 
 useless_words = ['bag'\
 ,'box'\
@@ -58,7 +59,17 @@ useless_words = ['bag'\
 ,'whole'
 ]
 
-dfid = pd.read_csv('complete_food_full_dataset.csv')
+dfid = pd.read_csv('temp/complete_food_full_dataset.csv')
+dfr = pd.read_csv('output_result.csv')
+all_files = glob.glob('temp/food_reviews_full_dataset*.csv')
+li = []
+
+for filename in all_files:
+    df = pd.read_csv(filename, index_col=None, header=0)
+    li.append(df)
+
+dfrev = pd.concat(li, axis=0, ignore_index=True)
+
 val = dfid['prep_time'].str.split(':').str[1]
 dfid.drop("prep_time", axis=1, inplace=True)
 
@@ -92,6 +103,22 @@ for each in val:
         else:
             time_list.append(hr[0])
 
+dfid['prep_time'] = time_list
+
+def getminnum(mins):
+    return str(mins).split("m")[0]
+
+dfid = dfid.drop(['dishurl'],axis=1)
+title = dfr['title'][0:500000]
+title = title.tolist()
+dfid['recipe_name'] = title
+
+own = dfr['owner'][0:500000]
+own = own.tolist()
+dfid['contributor_id'] = own
+
+dfid['minutes']= dfid['prep_time'].apply(getminnum)
+
 print ("*** Cleaned Prep Time ***")
 
 nut = dfid[['nutrients']]
@@ -106,7 +133,8 @@ for i in n1:
     n = []
     for j in i:
         st = j.strip().replace("\n","")
-        n.append(re.sub("\s\s+"," ",st))
+        st1 = re.sub("\s\s+"," ",st)
+        n.append(re.sub('[^0-9.]+',"",st1))
     finnut.append(n)
 
 print ("*** Cleaned Nutrients ***")
@@ -117,6 +145,11 @@ ing1 = ing[ing['ingredients'] != 'empty']
 ing1['ingredients'] =  ing1['ingredients'].apply(eval)
 finaling = []
 ingfilt = ing1['ingredients'] 
+
+ingsteps = []
+
+for i in ingfilt :
+    ingsteps.append(len(i))
 
 for i in ing1['ingredients'] :
     n = []
@@ -134,10 +167,36 @@ idx = np.where(ing['ingredients'] == 'empty')
 idx1 = list(idx[0])
 for each in idx1:
     finaling.insert(each, 'empty ingredients')
+    ingsteps.insert(each,"0")
 
-print ("*** Done ***")
+print ("*** Cleaned Ingrediens ***")
 
-dfid['ingredient'] = finaling
+dfid = dfid.rename(columns={"recipe":"steps"})
+s1 = dfid[['steps']]
+s2 = s1[s1['steps'] != 'empty']
+s2['steps'] =  s2['steps'].apply(eval)
+finalsteps = []
+s2filt = s2['steps'] 
+
+for i in s2filt :
+    finalsteps.append(len(i))
+
+idx = np.where(s1['steps'] == 'empty')
+idx1 = list(idx[0])
+for each in idx1:
+    finalsteps.insert(each, '0')
+
+print ("*** Cleaned Steps ***")
+
+dfid['ingredients'] = finaling
 dfid['nutrients'] = finnut
-dfid['prep_time'] = time_list
-dfid.to_csv('food_final_etl_dataset.csv',encoding='utf-8',index=False)
+dfid['n_step'] = finalsteps
+dfid['n_ingredients'] = ingsteps
+dfid = dfid.rename(columns={"nutrients":"nutrition"})
+finaldf = dfid[['recipe_name', 'recipe_id', 'minutes', 'contributor_id', 'nutrition', 'n_step', 'steps',"ingredients","n_ingredients"]]
+
+dfrev = dfrev.rename(columns={"id":"user_id","review_text":"review"})
+revfinal = dfrev[['user_id','recipe_id','rating','review']]
+
+finaldf.to_csv('temp/full_food.csv',encoding='utf-8',index=False)
+revfinal.to_csv('temp/user_interactions.csv',encoding='utf-8',index=False)

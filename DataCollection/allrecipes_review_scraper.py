@@ -65,11 +65,10 @@ async def collect_data(start_page, end_page):
                                 page = page1,num = brandval)
             queries.append(query)
 
-    df = await fetch_records(queries)
+    df = asyncio.run(fetch_records(queries))
     return df
 
 total_requests = df1.shape[0]
-#total_requests = 3
 batch_size = 100
 batches = math.ceil(total_requests/batch_size)
 rev_df = pd.DataFrame()
@@ -79,7 +78,7 @@ try:
         start_page = (i-1)*batch_size
         end_page = i*batch_size
         # end_page = end_page if end_page<total_requests else total_requests-1
-        df = await collect_data(start_page, end_page)
+        df = asyncio.run(collect_data(start_page, end_page))
         rev_df = pd.concat([rev_df, df])
         print(f"processed for page {start_page}, {end_page}")
 

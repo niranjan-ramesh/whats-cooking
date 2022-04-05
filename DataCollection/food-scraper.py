@@ -49,6 +49,6 @@ for i in range(1, total_pages + 1):
 df = asyncio.run(fetch_records(queries))
 result = result.append(df)
 print(result.shape)
-result.to_csv('result.csv', index=False)
+result.to_csv('output_result.csv', index=False)
 
 

@@ -33,7 +33,7 @@ model = gensim.models.KeyedVectors.load_word2vec_format(
     bdata / 'GoogleNews-vectors-negative300.bin.gz', binary=True)
 
 # from local path 
-# model = KeyedVectors.load_word2vec_format('./Model/GoogleNews-vectors-negative300.bin.gz', binary=True)
+# model = gensim.models.KeyedVectors.load_word2vec_format('./Model/GoogleNews-vectors-negative300.bin.gz', binary=True)
 
 
 
@@ -102,7 +102,7 @@ def get_similar_items(ingredients, items_to_predict=10):
     # print(list(predcited_df['clusters'].values))
     return list(predcited_df['id'].values)
 
-# imput sample
+# input sample
 # ingredients = ['winter squash', 'mexican seasoning', 'mixed spice', 'honey', 'butter', 'olive oil', 'salt']
 # start_time = time.time()
 # print(get_similar_items(ingredients))

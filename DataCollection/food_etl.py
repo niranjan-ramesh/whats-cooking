@@ -192,8 +192,8 @@ dfid['ingredients'] = finaling
 dfid['nutrients'] = finnut
 dfid['n_step'] = finalsteps
 dfid['n_ingredients'] = ingsteps
-dfid = dfid.rename(columns={"nutrients":"nutrition"})
-finaldf = dfid[['recipe_name', 'recipe_id', 'minutes', 'contributor_id', 'nutrition', 'n_step', 'steps',"ingredients","n_ingredients"]]
+dfid = dfid.rename(columns={"recipe_name":"name","recipe_id":"id","nutrients":"nutrition"})
+finaldf = dfid[['name', 'id', 'minutes', 'contributor_id', 'nutrition', 'n_step', 'steps',"ingredients","n_ingredients"]]
 
 dfrev = dfrev.rename(columns={"id":"user_id","review_text":"review"})
 revfinal = dfrev[['user_id','recipe_id','rating','review']]

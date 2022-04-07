@@ -61,10 +61,10 @@ useless_words = ['bag'\
 dfrec = pd.read_csv('final_recipes.csv')
 dfrev = pd.read_csv('final_reviews.csv')
 dfrec1 = dfrec.drop(["cook","prep","Servings","Yield"], axis=1)
-dfrec2 = dfrec1.rename(columns={"title":"recipe_name","id":"recipe_id",
+dfrec2 = dfrec1.rename(columns={"title":"name","id":"id",
                             "total":"minutes","owner":"contributor_id",
                             "Directions":"steps"})
-allrecdf = dfrec2[['recipe_name', 'recipe_id', 'minutes', 'contributor_id', 'Nutrition', 'steps',"Ingredients"]]
+allrecdf = dfrec2[['name', 'id', 'minutes', 'contributor_id', 'Nutrition', 'steps',"Ingredients"]]
 
 ing = allrecdf[['steps']]
 allrecdf.drop("steps", axis=1, inplace=True)
@@ -129,7 +129,7 @@ for i in n1:
     finalnutri.append(n)
 
 allrecdf['nutrition'] = finalnutri
-allrecdfin = allrecdf[['recipe_name', 'recipe_id', 'minutes', 'contributor_id', 'nutrition', 'n_steps', 'steps',"ingredients","n_ingredients"]]
+allrecdfin = allrecdf[['name', 'id', 'minutes', 'contributor_id', 'nutrition', 'n_steps', 'steps',"ingredients","n_ingredients"]]
 dfrev = dfrev.rename(columns={"username":"user_id","review_text":"review"})
 revfinal = dfrev[['user_id','recipe_id','rating','review']]
 

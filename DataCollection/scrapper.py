@@ -4,7 +4,7 @@ import pandas as pd
 import time
 import sys
 
-inputs = sys.argv[1]
+inputs = "allrecipes.csv"
 df1 = pd.read_csv(inputs)
 df2 = df1.dish_url
 recipes_df = pd.DataFrame(columns = ['Dish Name', 'cook', 'prep', 'total', 'Servings', 'Yield', 'Ingredients', 'Directions' , 'Nutrition'])
@@ -76,4 +76,4 @@ for url in df2:
         recipes_df = recipes_df.append(recipe_data, ignore_index=True)
         count = count +1
 
-recipes_df.to_csv('dish_recipes3.csv',encoding='utf-8',index=False)
+recipes_df.to_csv('dish_recipes.csv',encoding='utf-8',index=False)

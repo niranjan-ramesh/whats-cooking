@@ -7,6 +7,7 @@ import asyncio
 import math
 import requests
 import sys
+import argparse
 
 def get_data(page_source):
     soup = BeautifulSoup(page_source, 'html.parser')
@@ -34,9 +35,16 @@ def scrape_recipe(URL):
     prep_time, ingredients, recipe, nutrients = get_data(page_source)
     return (prep_time, ingredients, recipe, nutrients)
 
-df = pd.read_csv('result.csv')
-start = 0
-end = 500000
+df = pd.read_csv('output_result.csv')
+parser = argparse.ArgumentParser()
+parser.add_argument("-start_pos", action="store", dest="start_pos", type=int)
+parser.add_argument("-end_pos", action="store", dest="end_pos", type=int)
+parser.add_argument("-dataset_num", action="store", dest="dataset_num", type=str)
+args = parser.parse_args() 
+start = args.start_pos
+end = args.end_pos
+datasetnum = args.dataset_num
+
 rec_id = df['recipe_id'][start:end]
 url = df['dish_url'][start:end]
 
@@ -63,4 +71,4 @@ rec_df['prep_time'] = prep_times
 rec_df['ingredients'] = ingredients_s
 rec_df['recipe'] = recipes
 rec_df['nutrients'] = nutrients_s
-rec_df.to_csv('complete_food_dataset.csv', index=False)
+rec_df.to_csv('temp/complete_food_dataset'+datasetnum+'.csv', index=False)

@@ -129,6 +129,10 @@ dmypy.json
 .pyre/
 
 test/
+Data/
+DataCollection/datasets/
+DataCollection/temp/
+DataCollection/final_datasets/
 
 .DS_Store
 .vscode/

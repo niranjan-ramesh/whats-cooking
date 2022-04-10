@@ -1,28 +1,10 @@
 from dataprep.connector import connect
 from bs4 import BeautifulSoup
 import re
-# from datetime import datetime
-# import matplotlib.pyplot as plt
 import pandas as pd
 import asyncio
 import math
 import time
-
-# "authorization": "Bearer",
-# "pagination": {
-#             "type": "page",
-#             "pageKey": "page",
-#             "limitKey": "pageSize",
-#             "maxCount": 5000000
-#         } 
-# "pagination": {
-#             "type": "offset",
-#             "offsetKey": "f",
-#             "limitKey": "h",
-#             "maxCount": 100000
-#         }   
-# Provide your API key here for TAs to reproduce your results
-# API_key = "8D73AS9T8U2JKXRP"
 
 connect_api = connect("./config", _concurrency=10)
 
@@ -97,12 +79,3 @@ for i in range(1, batches+1):
 result_df['id'] = result_df.index
 print(f"final shape {result_df.shape}")
 result_df.to_csv('allrecipes.csv', index=False)
-
-# # Connecting to Web API using dataprep
-# queries = []
-# for i in range(1, total_requests):
-#     query = connect_api.query('allrecipes', page=i)
-#     queries.append(query)
-
-# df = asyncio.run(fetch_records(queries))
-# df.to_csv('allrecipes.csv', sep='\t')

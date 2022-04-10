@@ -1,14 +1,10 @@
 from dataprep.connector import Connector
-import requests
 import pandas as pd
-import time
-import requests
 from numpy import *
 from requests import get
 from bs4 import BeautifulSoup
 import asyncio
 import math
-from itertools import chain
 
 df1 = pd.read_csv("allrecipes.csv")
 
@@ -20,23 +16,26 @@ type1 = 'reviews'
 getUserEndpoint1 = '/user-proxy/getreviewbyuserandcontent?mappingType=myReview'
 postReactionEndpoint1 = '/user-proxy/savereaction'
 postGenerateSignedUrlEndpoint1 = '/user-proxy/generatesignedurl'
-postFeedbackPhotoUploadEndpoint1 = '/element-api/content-proxy/generic-photo-upload'
+postFeedbackPhotoUploadEndpoint1 = '/element-api/\
+content-proxy/generic-photo-upload'
 contentType1 = 'recipe'
 page1 = '1'
 ofContent1 = 'alrcom'
 
-rev_df = pd.DataFrame(columns = ['review_text', 'username', 'rating', 'review_date'])
+rev_df = pd.DataFrame(
+    columns=['review_text', 'username', 'rating', 'review_date'])
 count = 1
+
 
 async def fetch_records(queries_to_fetch):
     results = asyncio.gather(*queries_to_fetch)
-    df = pd.concat(await results, ignore_index = True)
+    df = pd.concat(await results, ignore_index=True)
     return df
+
 
 async def collect_data(start_page, end_page):
     queries = []
-    id_list = []
-    print (start_page,end_page)
+    print(start_page, end_page)
     for i in range(start_page, end_page):
         print("processing for recipe: ", i)
         val = df1.iloc[i].values.flatten().tolist()
@@ -45,24 +44,34 @@ async def collect_data(start_page, end_page):
         response = get(url)
         fr = response.text
         html_soup = BeautifulSoup(fr, 'html.parser')
-        
-        rev_count_tag = html_soup.find('span', attrs={'class':'feedback__total'})
-        if rev_count_tag :
-            
+
+        rev_count_tag = html_soup.find(
+            'span', attrs={'class': 'feedback__total'})
+        if rev_count_tag:
+
             rc = rev_count_tag.text
-            itemsPerPage1 =  rc
+            itemsPerPage1 = rc
             itemsToRender1 = rc
 
             a = url.split('recipe/')
-            brandval = a[1].split("/")[0]              
+            brandval = a[1].split("/")[0]
             url1 = url
 
-            query = con.query("reviews",
-                                renderTemplate = renderTemplate1, type = type1,
-                                itemsPerPage = itemsPerPage1, itemsToRender = itemsToRender1,getUserEndpoint = getUserEndpoint1,
-                                postReactionEndpoint = postReactionEndpoint1, postGenerateSignedUrlEndpoint = postGenerateSignedUrlEndpoint1,
-                                postFeedbackPhotoUploadEndpoint = postFeedbackPhotoUploadEndpoint1, contentType = contentType1, url = url1,
-                                page = page1,num = brandval)
+            query = con.query(
+                "reviews",
+                renderTemplate=renderTemplate1,
+                type=type1,
+                itemsPerPage=itemsPerPage1,
+                itemsToRender=itemsToRender1,
+                getUserEndpoint=getUserEndpoint1,
+                postReactionEndpoint=postReactionEndpoint1,
+                postGenerateSignedUrlEndpoint=postGenerateSignedUrlEndpoint1,
+                postFeedbackPhotoUploadEndpoint=postFeedbackPhotoUploadEndpoint1,
+                contentType=contentType1,
+                url=url1,
+                page=page1,
+                num=brandval
+            )
             queries.append(query)
 
     df = asyncio.run(fetch_records(queries))
@@ -83,6 +92,6 @@ try:
         print(f"processed for page {start_page}, {end_page}")
 
 except Exception as e:
-    print (e)
-    rev_df.to_csv('reviews_exception.csv',encoding='utf-8',index=False)
-rev_df.to_csv('reviews.csv',encoding='utf-8',index=False)
+    print(e)
+    rev_df.to_csv('reviews_exception.csv', encoding='utf-8', index=False)
+rev_df.to_csv('reviews.csv', encoding='utf-8', index=False)

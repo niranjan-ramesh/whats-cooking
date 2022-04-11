@@ -93,7 +93,9 @@ def get_similar_items(ingredients, items_to_predict=10):
     ingredients = " ".join(ingredients)
     ratings_df = features_df[features_df['ingredients'].str.contains(
         ingredients)]
-
+    # taking only the first match, as all matches with same ingredients
+    # will be in same cluster
+    ratings_df = ratings_df.drop(ratings_df.index.to_list()[1:], axis=0)
     lemmatized = text_to_wordlist(ingredients)
     vectorized = text2vec(lemmatized)
     column_transformer = get_column_tranformer()

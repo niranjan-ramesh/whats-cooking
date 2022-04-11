@@ -1,28 +1,35 @@
 from requests import get
 from bs4 import BeautifulSoup
 import pandas as pd
-import time
-import sys
 
 inputs = "allrecipes.csv"
 df1 = pd.read_csv(inputs)
 df2 = df1.dish_url
-recipes_df = pd.DataFrame(columns = ['Dish Name', 'cook', 'prep', 'total', 'Servings', 'Yield', 'Ingredients', 'Directions' , 'Nutrition'])
-recipe_data = {'Dish Name':'', 'cook':'', 'prep':'', 'total':'', 'Servings':'', 'Yield':'', 'Ingredients':'', 'Directions' :'', 'Nutrition':''}
+recipes_df = pd.DataFrame(columns=['Dish Name', 'cook', 'prep', 'total',
+                                   'Servings', 'Yield', 'Ingredients',
+                                   'Directions', 'Nutrition'])
+recipe_data = {'Dish Name': '', 'cook': '', 'prep': '', 'total': '',
+               'Servings': '', 'Yield': '', 'Ingredients': '',
+               'Directions': '', 'Nutrition': ''}
 count = 0
 
 for url in df2:
-    print ("***** Iteration for dish recipe ------>>>>> ",count)
+    print("***** Iteration for dish recipe ------>>>>> ", count)
     response = get(url)
     fr = response.text
     html_soup = BeautifulSoup(fr, 'html.parser')
-    dish_name = html_soup.find_all('h1',class_ = 'headline heading-content elementFont__display')
-    first_box = html_soup.find_all('div', class_ = 'recipe-meta-item-header elementFont__subtitle--bold elementFont__transformCapitalize')
-    first_box_val = html_soup.find_all('div', class_ = "recipe-meta-item-body elementFont__subtitle")
-    ing = html_soup.find_all('li', class_ = "ingredients-item")
-    dir = html_soup.find_all('li', class_ = "subcontainer instructions-section-item")
-    tag = html_soup.find_all('span', attrs={'class':'elementFont__details--bold elementFont__transformCapitalize'})
-    nut_val = html_soup.find_all('span', attrs={'class':'nutrient-value'})
+    dish_name = html_soup.find_all(
+        'h1', class_='headline heading-content elementFont__display')
+    first_box = html_soup.find_all(
+        'div', class_='recipe-meta-item-header elementFont__subtitle--bold elementFont__transformCapitalize')
+    first_box_val = html_soup.find_all(
+        'div', class_="recipe-meta-item-body elementFont__subtitle")
+    ing = html_soup.find_all('li', class_="ingredients-item")
+    dir = html_soup.find_all(
+        'li', class_="subcontainer instructions-section-item")
+    tag = html_soup.find_all('span', attrs={
+                             'class': 'elementFont__details--bold elementFont__transformCapitalize'})
+    nut_val = html_soup.find_all('span', attrs={'class': 'nutrient-value'})
 
     head = []
     data = []
@@ -74,6 +81,6 @@ for url in df2:
         nut = dict(zip(x, y))
         recipe_data['Nutrition'] = nut
         recipes_df = recipes_df.append(recipe_data, ignore_index=True)
-        count = count +1
+        count = count + 1
 
-recipes_df.to_csv('dish_recipes.csv',encoding='utf-8',index=False)
+recipes_df.to_csv('dish_recipes.csv', encoding='utf-8', index=False)

@@ -61,7 +61,7 @@ python3 recipes_id_appender.py
 python3 food_etl.py
 ```
 
-3. Web scraper scripts for Allrecipes.com
+2. Web scraper scripts for Allrecipes.com
 ```
 python3 allrecipes_scrapper.py
 ```
@@ -78,7 +78,7 @@ python3 allrecipes_etl.py
 python3 allrecipes_formatter.py
 ```
 
-4. Damn Delicious Dataset
+3. Damn Delicious Dataset
   
   To scrape the dataset from DamnDelicious.net, run the "damn_delicious_scrapper.ipynb" file from start to end. This will save recipes and reviews datasets.
   Alternatively run the following for python execution:

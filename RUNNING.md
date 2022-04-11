@@ -96,6 +96,8 @@ Once all the recipes have been scraped, Run the following to scrape reviews:
 python3 foodnetwork_reviews.py "initial_name" 
 ```
 
+After all recipes and reviews scraping have been completed, return to the python notebook for merging the scraped parts and processing them.
+
 Example:
 ```
 python3 foodnetwork_reviews.py XYZ

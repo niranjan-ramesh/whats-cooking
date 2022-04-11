@@ -40,94 +40,63 @@ Please find the file structure below,
 
 ```
 
+├── CuisinePrediction.ipynb
 ├── Data
-
-│ └── CuisinePred
-
-│ └── train.json
-
+│   └── CuisinePred
+│       └── train.json
 ├── DataCollection
-
-│ ├── allrecipes_etl.py
-
-│ ├── allrecipes_formatter.py
-
-│ ├── allrecipes_review_scraper.py
-
-│ ├── allrecipes_scraper.py
-
-│ ├── config
-
-│ │ ├── _meta.json
-
-│ │ ├── allrecipes.json
-
-│ │ ├── food.json
-
-│ │ ├── food_reviews.json
-
-│ │ └── reviews.json
-
-│ ├── food-recipes.py
-
-│ ├── food-review-scrapper.py
-
-│ ├── food-scraper.ipynb
-
-│ ├── food-scraper.py
-
-│ ├── food_etl.py
-
-│ ├── recipes_id_appender.py
-
-│ ├── scraping 2.ipynb
-
-│ ├── scraping.ipynb
-
-│ └── scrapper.py
-
+│   ├── allrecipes_etl.py
+│   ├── allrecipes_formatter.py
+│   ├── allrecipes_review_scraper.py
+│   ├── allrecipes_scraper.py
+│   ├── config
+│   │   ├── _meta.json
+│   │   ├── allrecipes.json
+│   │   ├── food.json
+│   │   ├── food_reviews.json
+│   │   └── reviews.json
+│   ├── damn_delicious.py
+│   ├── damn_delicious_scrapper.ipynb
+│   ├── food-recipes.py
+│   ├── food-review-scrapper.py
+│   ├── food-scraper.py
+│   ├── food_etl.py
+│   ├── food_network_scrapper.ipynb
+│   ├── foodnetwork_recipes.py
+│   ├── foodnetwork_reviews.py
+│   ├── matching_datasets.py
+│   ├── merge_datasets.ipynb
+│   ├── recipes_id_appender.py
+│   └── scrapper.py
 ├── EDA
-
-│ └── EDA.ipynb
-
+│   └── EDA.ipynb
 ├── KMeans_analysis.png
-
 ├── KMeans_training.ipynb
-
 ├── README.md
-
+├── RUNNING.md
 ├── RatingReviewAnalysis
-
-│ └── ratinganalysis.ipynb
-
+│   └── ratinganalysis.ipynb
 ├── UI
-
-│ ├── frontend.py
-
-│ └── ui.sh
-
+│   ├── frontend.py
+│   └── ui.sh
+├── data_loader.py
+├── dotproduct-training.ipynb
+├── evaluation.py
 ├── predict_similar_items.py
-
 ├── rbm.py
-
-├── rbmpy.py
-
+├── rbm_training.ipynb
 ├── recc.ipynb
-
 ├── requirements.txt
-
 ├── result.csv
-
-├── utils.py
-
-└── vae.py
+├── vae.py
+└── vae_training.ipynb
 
 ```
 
 ## Outcome of Analysis
 
 
-The user interface for the food recommendation system can be found [here] (IP).
+The user interface for the food recommendation system can be found [here](http://34.105.46.205:8501/).
 
 
 ## Licenses and Acknowledgement

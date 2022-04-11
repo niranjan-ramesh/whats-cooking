@@ -131,6 +131,7 @@ python3 damn_delicious.py
 
 ```
 
+After executing python file, return back to ipynb for the ETL Section.
   
 
 4. Food Network Dataset

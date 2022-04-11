@@ -103,6 +103,7 @@ def convert_str(df):
     df['ingredients'] = df['ingredients'].astype(str)
     return df
 
+
 # Get the scores of the matching pairs
 def get_scores(df1, df2):
     scores = pd.DataFrame([])

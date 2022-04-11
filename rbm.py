@@ -196,8 +196,8 @@ class RBM:
                 v0: validation, W: self.cur_w, bias_vis: self.cur_bias_vis, bias_hid: self.cur_bias_hid
             })
 
-            # print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f'
-            #         %(epoch,(current_loss), (test_loss)))
+            print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f'
+                  % (epoch, (current_loss), (test_loss)))
             train_loss.append(current_loss)
             valid_loss.append(test_loss)
 

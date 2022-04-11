@@ -147,7 +147,6 @@ class DeepAutoEncoder:
                 _, loss_ = sess.run([train_op, loss_op], feed_dict={
                     X: batch
                 })
-                # train_loss += loss_
             train_loss = sess.run(RMSE_loss, feed_dict={
                 X: batch
             })
@@ -155,13 +154,10 @@ class DeepAutoEncoder:
                 X_valid: X_test
             })
 
-            # p, r = self.evaluate(data)
-
-            # print('Precision: ', p)
-            # print('Recall: ', r)
             train_errors.append(train_loss)
             test_errors.append(test_loss)
-            # print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f' %(epoch,(train_loss), test_loss))
+            print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f' %
+                  (epoch, (train_loss), test_loss))
 
         if not os.path.exists(self.file_path):
             os.mkdir(self.file_path)

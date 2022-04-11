@@ -6,3 +6,6 @@ dataprep == 0.4.2
 beautifulsoup4
 fastai == 1.0.50
 urllib3 == 1.25.10
+wordcloud == 1.8.1
+circlify
+mycolorpy

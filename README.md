@@ -136,7 +136,7 @@ This will merge the datasets we have scrapped.
 ### EDA
 
 
-EDA can be performed by running the "EDA/EDA.ipynb file".
+EDA can be performed by running the "EDA/EDA.ipynb" file.
 
 
 ### User Interface

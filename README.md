@@ -85,9 +85,7 @@ Please find the file structure below,
 ├── predict_similar_items.py
 ├── rbm.py
 ├── rbm_training.ipynb
-├── recc.ipynb
 ├── requirements.txt
-├── result.csv
 ├── vae.py
 └── vae_training.ipynb
 

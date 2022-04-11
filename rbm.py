@@ -1,165 +1,288 @@
-# Import PyTorch library
-import torch
+import random
 import numpy as np
+import pandas as pd
+import datetime
+
 import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+tf.compat.v1.disable_eager_execution()
+
+tf.debugging.set_log_device_placement(True)
+
+import matplotlib.pyplot as plt
 import os
-from utils import Util
 
-# Create the Restricted Boltzmann Machine architecture
 class RBM:
-    def __init__(self, alpha, H, num_vis):
-
-        self.alpha = alpha
-        self.num_hid = H
-        self.num_vis = num_vis # might face an error here, call preprocess if you do
-        self.errors = []
-        self.energy_train = []
-        self.energy_valid = []
-
-    def sample_h(self, x):
+    def __init__(self, num_hid, num_vis):
+        """Initializing the RMB architecture
+        
+        @params
+        num_hid: integer
+            The number of hidden activations
+            
+        num_vis: integer
+            The number of visible activations
+        
+        @returns The RBM class
         """
-        Sample the hidden units
-        :param x: the dataset
+        self.num_hid = num_hid
+        self.num_vis = num_vis
+
+        self.cur_w = np.zeros([self.num_vis, self.num_hid], np.float32)
+        self.cur_bias_vis = np.zeros([self.num_vis], np.float32)
+        self.cur_bias_hid = np.zeros([self.num_hid], np.float32)
+
+        cwd = os.getcwd()
+        if not os.path.exists(cwd + '/Model'):
+            os.mkdir(cwd + '/Model')
+        self.file_path = cwd + '/Model/rbm'
+
+    def bernoulli_sample(self, probs):
+        """Bernoulli sample to decide if the node will be sampled or not
+        
+        @params:
+        probs: tensor
+            The distribution of the activation of the nodes
+            
+        @returns:
+        sampled: tensor
+            Sampled activation of nodes
         """
+        sampled = tf.nn.relu(tf.sign(probs - tf.random_uniform(tf.shape(probs))))
+        return sampled
 
-        # Probability h is activated given that the value v is sigmoid(Wx + a)
-        # torch.mm make the product of 2 tensors
-        # W.t() take the transpose because W is used for the p_v_given_h
-        wx = torch.mm(x, self.W.t())
+    def visible_to_hidden(self, v0, W, bias_hid):
+        """Visible layer to hidden layer with Gibbs sampling
+        
+        @params:
+        v: tensor
+            The visible layer activations
 
-        # Expand the mini-batch
-        activation = wx + self.h_bias.expand_as(wx)
-
-        # Calculate the probability p_h_given_v
-        p_h_given_v = torch.sigmoid(activation)
-
-        # Construct a Bernoulli RBM to predict whether an user loves the movie or not (0 or 1)
-        # This corresponds to whether the n_hid is activated or not activated
-        return p_h_given_v, torch.bernoulli(p_h_given_v)
-
-    def sample_v(self, y):
+        @returns
+        h: tensor
+            Hidden layer activation
+        sampled_h: tensor
+            Sampled activation from the hidden layer. Gibbs sampling is used
         """
-        Sample the visible units
-        :param y: the dataset
+        h = tf.nn.sigmoid(tf.matmul(v0, W) + bias_hid)  # Visible layer activation
+        sampled_h = self.bernoulli_sample(h)
+
+        return h, sampled_h
+
+    def hidden_to_visible(self, h0, W, bias_vis):
+        """Hidden layer to visible layer - Reconstruction
+
+        @params:
+        h0: tensor
+            The hidden layer activations
+
+        @returns
+        sampled_v: tensor
+            Sampled activations from the visible layer.
         """
+        _v1 = tf.nn.sigmoid(tf.matmul(h0, tf.transpose(W)) + bias_vis)
+        sampled_v = self.bernoulli_sample(_v1)
+        return _v1, sampled_v
 
-        # Probability v is activated given that the value h is sigmoid(Wx + a)
-        wy = torch.mm(y, self.W)
+    def compute_energy(self, x):
+        """Compute the free energy of the RBM
+        
+        @params:
+        x: array
+            Input ratings distribution
+        
+        @returns:
+        energy: float
+            Computed energy of the RBM
+        """        
+        x = x.astype(np.float128)
+        energy = (np.sum(np.log(1 + np.exp(np.dot(x, self.cur_w) + self.cur_bias_hid)), axis = 1) 
+            + np.dot(x, self.cur_bias_vis)) * -1
+        return energy   
 
-        # Expand the mini-batch
-        activation = wy + self.v_bias.expand_as(wy)
-
-        # Calculate the probability p_v_given_h
-        p_v_given_h = torch.sigmoid(activation)
-
-        # Construct a Bernoulli RBM to predict whether an user loves the movie or not (0 or 1)
-        # This corresponds to whether the n_vis is activated or not activated
-        return p_v_given_h, torch.bernoulli(p_v_given_h)
-
-    def training(self, train, valid, user, epochs, batchsize, free_energy, verbose, filename):
-        '''
-        Function where RBM training takes place
-        '''
-        vb = tf.placeholder(tf.float32, [self.num_vis]) # Number of unique books
-        hb = tf.placeholder(tf.float32, [self.num_hid]) # Number of features were going to learn
-        W = tf.placeholder(tf.float32, [self.num_vis, self.num_hid])  # Weight Matrix
+    def fit(self, interactions, validation, lr, epochs, batch_size):
+        """Training the RBM
+        
+        @params:
+        interactions: dataframe
+            User interactions
+        validation: array
+            Validation dataset
+        lr: float
+            The learning rate
+        epochs: integer
+            The number of epochs for training
+        batch_size: integer
+            The number of data points per batch
+        """
+        
+        self.interactions = interactions
+        bias_vis = tf.placeholder(tf.float32, [self.num_vis]) 
+        bias_hid = tf.placeholder(tf.float32, [self.num_hid]) 
+        W = tf.placeholder(tf.float32, [self.num_vis, self.num_hid])
+          
         v0 = tf.placeholder(tf.float32, [None, self.num_vis])
 
-        print("Phase 1: Input Processing")
-        _h0 = tf.nn.sigmoid(tf.matmul(v0, W) + hb)  # Visible layer activation
-        # Gibb's Sampling
-        h0 = tf.nn.relu(tf.sign(_h0 - tf.random_uniform(tf.shape(_h0))))
-        print("Phase 2: Reconstruction")
-        _v1 = tf.nn.sigmoid(tf.matmul(h0, tf.transpose(W)) + vb)  # Hidden layer activation
-        v1 = tf.nn.relu(tf.sign(_v1 - tf.random_uniform(tf.shape(_v1))))
-        h1 = tf.nn.sigmoid(tf.matmul(v1, W) + hb)
+        # Input visible to hidden layer operations
 
-        print("Creating the gradients")
+        _h0, h0 = self.visible_to_hidden(v0, W, bias_hid)
+
+        # Reconstruction: Hidden to visible layer operations
+
+        _v1, v1 = self.hidden_to_visible(h0, W, bias_vis)
+
+        h1 = tf.nn.sigmoid(tf.matmul(v1, W) + bias_hid)
+
+        # Operations to update weights and biases based on gradients
         w_pos_grad = tf.matmul(tf.transpose(v0), h0)
         w_neg_grad = tf.matmul(tf.transpose(v1), h1)
 
-        # Calculate the Contrastive Divergence to maximize
+        # Contrastive Divergence to minimize the loss
         CD = (w_pos_grad - w_neg_grad) / tf.cast(tf.shape(v0)[0], tf.float32)
 
-        # Create methods to update the weights and biases
-        update_w = W + self.alpha * CD
-        update_vb = vb + self.alpha * tf.reduce_mean(v0 - v1, 0)
-        update_hb = hb + self.alpha * tf.reduce_mean(h0 - h1, 0)
+        update_w = W + lr * CD
+        update_vb = bias_vis + lr * tf.reduce_mean(v0 - v1, 0)
+        update_hb = bias_hid + lr * tf.reduce_mean(h0 - h1, 0)
 
-        # Set the error function, here we use Mean Absolute Error Function
-        err = v0 - v1
-        err_sum = tf.reduce_mean(err * err)
-
-        # Initialize our Variables with Zeroes using Numpy Library
-        # Current weight
-        cur_w = np.zeros([self.num_vis, self.num_hid], np.float32)
-        # Current visible unit biases
-        cur_vb = np.zeros([self.num_vis], np.float32)
-
-        # Current hidden unit biases
-        cur_hb = np.zeros([self.num_hid], np.float32)
+        # RMSE for reconstruction
+        diff = v0 - v1
+        err = tf.reduce_mean(diff * diff)
 
         # Previous weight
-        prv_w = np.random.normal(loc=0, scale=0.01,
+        init_w = np.random.normal(loc=0, scale=0.01,
                                 size=[self.num_vis, self.num_hid])
         # Previous visible unit biases
-        prv_vb = np.zeros([self.num_vis], np.float32)
+        init_bias_vis = np.zeros([self.num_vis], np.float32)
 
         # Previous hidden unit biases
-        prv_hb = np.zeros([self.num_hid], np.float32)
+        init_bias_hid = np.zeros([self.num_hid], np.float32)
 
-        print("Running the session")
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
         sess.run(tf.global_variables_initializer())
 
-        print("Training RBM with {0} epochs and batch size: {1}".format(epochs, batchsize))
-        print("Starting the training process")
-        util = Util()
-        for i in range(epochs):
-            for start, end in zip(range(0, len(train), batchsize), range(batchsize, len(train), batchsize)):
-                batch = train[start:end]
-                cur_w = sess.run(update_w, feed_dict={
-                                 v0: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
-                cur_vb = sess.run(update_vb, feed_dict={
-                                  v0: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
-                cur_hb = sess.run(update_hb, feed_dict={
-                                  v0: batch, W: prv_w, vb: prv_vb, hb: prv_hb})
-                prv_w = cur_w
-                prv_vb = cur_vb
-                prv_hb = cur_hb
+        train = interactions.values
+        batching = {
+            's': range(0, len(train), batch_size),
+            'e': range(batch_size, len(train), batch_size)
+        }
 
-            if valid:
-                etrain = np.mean(util.free_energy(train, cur_w, cur_vb, cur_hb))
-                self.energy_train.append(etrain)
-                evalid = np.mean(util.free_energy(valid, cur_w, cur_vb, cur_hb))
-                self.energy_valid.append(evalid)
-            self.errors.append(sess.run(err_sum, feed_dict={
-                          v0: train, W: cur_w, vb: cur_vb, hb: cur_hb}))
-            if verbose:
-                print("Error after {0} epochs is: {1}".format(i+1, self.errors[i]))
-            elif i % 10 == 9:
-                print("Error after {0} epochs is: {1}".format(i+1, self.errors[i]))
-        if not os.path.exists('rbm_models'):
-            os.mkdir('rbm_models')
-        filename = 'rbm_models/'+filename
-        if not os.path.exists(filename):
-            os.mkdir(filename)
-        np.save(filename+'/w.npy', prv_w)
-        np.save(filename+'/vb.npy', prv_vb)
-        np.save(filename+'/hb.npy',prv_hb)
+        train_loss = []
+        valid_loss = []
+        current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        train_log_dir = 'logs/gradient_tape/' + current_time + '/train'
+        train_summary_writer = tf.summary.FileWriter(train_log_dir)
+        for epoch in range(epochs):
+            current_loss = 0.0
+            for s, e in zip(batching['s'], batching['e']):
+                batch = train[s:e]
+                self.cur_w = sess.run(update_w, feed_dict={
+                                 v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
+                self.cur_bias_vis = sess.run(update_vb, feed_dict={
+                                  v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
+                self.cur_bias_hid = sess.run(update_hb, feed_dict={
+                                  v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
+                init_w = self.cur_w
+                init_bias_vis = self.cur_bias_vis
+                init_bias_hid = self.cur_bias_hid
+
+            current_loss = sess.run(err, feed_dict={
+                v0: train, W: self.cur_w, bias_vis: self.cur_bias_vis, bias_hid: self.cur_bias_hid
+            })  
+
+            test_loss = sess.run(err, feed_dict = {
+                v0: validation, W:self.cur_w, bias_vis: self.cur_bias_vis, bias_hid: self.cur_bias_hid
+            })
+
+            # print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f'
+            #         %(epoch,(current_loss), (test_loss)))
+            train_loss.append(current_loss)
+            valid_loss.append(test_loss)
+
+        if not os.path.exists(self.file_path):
+            os.mkdir(self.file_path)
+        np.save(self.file_path+'/weights.npy', init_w)
+        np.save(self.file_path+'/bias_vis.npy', init_bias_vis)
+        np.save(self.file_path+'/bias_hid.npy',init_bias_hid)
+
+        plt.plot(train_loss, label="Train")
+        plt.plot(valid_loss, label="Validation")
+        plt.xlabel("Epoch")
+        plt.ylabel("Error")
+        plt.savefig(self.file_path+"/error.png")
+
+
+    def predict(self, user, read_file=None):
+        """Predict ratings for all recipes of a user
         
-        if free_energy:
-            print("Exporting free energy plot")
-            # self.export_free_energy_plot(filename)
-        print("Exporting errors vs epochs plot")
-        # self.export_errors_plot(filename)
-        inputUser = [train[user]]
-        # Feeding in the User and Reconstructing the input
-        hh0 = tf.nn.sigmoid(tf.matmul(v0, W) + hb)
-        vv1 = tf.nn.sigmoid(tf.matmul(hh0, tf.transpose(W)) + vb)
-        feed = sess.run(hh0, feed_dict={v0: inputUser, W: prv_w, hb: prv_hb})
-        rec = sess.run(vv1, feed_dict={hh0: feed, W: prv_w, vb: prv_vb})
-        return rec, prv_w, prv_vb, prv_hb
+        @params:
+            user: array
+                The input current ratings of a specific user
+                
+        @returns:
+            predicted: array
+                The predicted rating for a user
+        """
+
+        bias_vis = tf.placeholder(tf.float32, [self.num_vis])
+        bias_hid = tf.placeholder(tf.float32, [self.num_hid])
+        W = tf.placeholder(tf.float32, [self.num_vis, self.num_hid])
+
+        v0 = tf.placeholder(tf.float32, [None, self.num_vis])
+        
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
+        
+        inputUser = user
+        if read_file is not None:
+            filename = self.file_path 
+            self.cur_w = np.load(filename+'/weights.npy')
+            self.cur_bias_vis = np.load(filename+'/bias_vis.npy')
+            self.cur_bias_hid = np.load(filename+'/bias_hid.npy')
+        
+        h0, sampled_h = self.visible_to_hidden(v0, W, bias_hid)
+        v1,_ = self.hidden_to_visible(h0, W, bias_vis)
+        hiden_activations = sess.run(h0, feed_dict={v0: inputUser, W: self.cur_w, bias_hid: self.cur_bias_hid})
+        recon_user = sess.run(v1, feed_dict={h0: hiden_activations, W: self.cur_w, bias_vis: self.cur_bias_vis})
+        
+        return recon_user
+
+    
+    def reccomend(self, all_interactions, user_id):
+        """Reccomendation scores for a user
+        
+        @params:
+        all_interactions: dataframe
+            The history of interactions of all users
+        user_id: integer
+            The id of the user to predict reccomendations for
+            
+        @returns:
+        scores: dataframe
+            Dataframe containing prediction scores for all recipes sorted descending
+        """
+
+        user = all_interactions.loc[user_id].values
+        pred_scores = self.predict([user])
+        pred_scores[0] = pred_scores[0] * (user==0)
+        scores = pd.DataFrame({'recipe_id': all_interactions.columns, 'scores': pred_scores})
+        return scores.sort_values('scores', ascending=False)
+    
+    def write_recc_files(self):
+        
+        interactions = self.interactions
+        user_ids = interactions.index
+        recipe_ids = interactions.columns
+        data = interactions.values
+        recs = []
+        preds = self.predict(data)
+        pred_scores = pd.DataFrame(preds, columns=recipe_ids, index=user_ids).T
+        for user_id in user_ids:
+            user_pred = pred_scores[[user_id]].sort_values(user_id, ascending=False)
+            recipes_rec = user_pred.index[:10]
+            recs.append(recipes_rec)
+        reccomendations = pd.DataFrame(recs, columns=range(1, 11))
+        reccomendations['user_id'] = user_ids
+        cwd = os.getcwd()
+        reccomendations.to_csv(cwd + '/Data/reccomendations_rbm.csv', index=False)

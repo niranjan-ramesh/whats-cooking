@@ -130,9 +130,7 @@ dmypy.json
 
 test/
 Data/
-DataCollection/datasets/
-DataCollection/temp/
-DataCollection/final_datasets/
+DataCollection/
 
 .DS_Store
 .vscode/

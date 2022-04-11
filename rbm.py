@@ -1,4 +1,5 @@
-import random
+import os
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import datetime
@@ -8,20 +9,18 @@ tf.compat.v1.disable_eager_execution()
 
 tf.debugging.set_log_device_placement(True)
 
-import matplotlib.pyplot as plt
-import os
 
 class RBM:
     def __init__(self, num_hid, num_vis):
         """Initializing the RMB architecture
-        
+
         @params
         num_hid: integer
             The number of hidden activations
-            
+
         num_vis: integer
             The number of visible activations
-        
+
         @returns The RBM class
         """
         self.num_hid = num_hid
@@ -38,21 +37,22 @@ class RBM:
 
     def bernoulli_sample(self, probs):
         """Bernoulli sample to decide if the node will be sampled or not
-        
+
         @params:
         probs: tensor
             The distribution of the activation of the nodes
-            
+
         @returns:
         sampled: tensor
             Sampled activation of nodes
         """
-        sampled = tf.nn.relu(tf.sign(probs - tf.random_uniform(tf.shape(probs))))
+        sampled = tf.nn.relu(
+            tf.sign(probs - tf.random_uniform(tf.shape(probs))))
         return sampled
 
     def visible_to_hidden(self, v0, W, bias_hid):
         """Visible layer to hidden layer with Gibbs sampling
-        
+
         @params:
         v: tensor
             The visible layer activations
@@ -63,7 +63,8 @@ class RBM:
         sampled_h: tensor
             Sampled activation from the hidden layer. Gibbs sampling is used
         """
-        h = tf.nn.sigmoid(tf.matmul(v0, W) + bias_hid)  # Visible layer activation
+        h = tf.nn.sigmoid(tf.matmul(v0, W) +
+                          bias_hid)  # Visible layer activation
         sampled_h = self.bernoulli_sample(h)
 
         return h, sampled_h
@@ -85,23 +86,24 @@ class RBM:
 
     def compute_energy(self, x):
         """Compute the free energy of the RBM
-        
+
         @params:
         x: array
             Input ratings distribution
-        
+
         @returns:
         energy: float
             Computed energy of the RBM
-        """        
+        """
         x = x.astype(np.float128)
-        energy = (np.sum(np.log(1 + np.exp(np.dot(x, self.cur_w) + self.cur_bias_hid)), axis = 1) 
-            + np.dot(x, self.cur_bias_vis)) * -1
-        return energy   
+        energy = (np.sum(np.log(1 + np.exp(np.dot(x, self.cur_w) +
+                                           self.cur_bias_hid)), axis=1)
+                  + np.dot(x, self.cur_bias_vis)) * -1
+        return energy
 
     def fit(self, interactions, validation, lr, epochs, batch_size):
         """Training the RBM
-        
+
         @params:
         interactions: dataframe
             User interactions
@@ -114,12 +116,12 @@ class RBM:
         batch_size: integer
             The number of data points per batch
         """
-        
+
         self.interactions = interactions
-        bias_vis = tf.placeholder(tf.float32, [self.num_vis]) 
-        bias_hid = tf.placeholder(tf.float32, [self.num_hid]) 
+        bias_vis = tf.placeholder(tf.float32, [self.num_vis])
+        bias_hid = tf.placeholder(tf.float32, [self.num_hid])
         W = tf.placeholder(tf.float32, [self.num_vis, self.num_hid])
-          
+
         v0 = tf.placeholder(tf.float32, [None, self.num_vis])
 
         # Input visible to hidden layer operations
@@ -149,7 +151,7 @@ class RBM:
 
         # Previous weight
         init_w = np.random.normal(loc=0, scale=0.01,
-                                size=[self.num_vis, self.num_hid])
+                                  size=[self.num_vis, self.num_hid])
         # Previous visible unit biases
         init_bias_vis = np.zeros([self.num_vis], np.float32)
 
@@ -177,21 +179,21 @@ class RBM:
             for s, e in zip(batching['s'], batching['e']):
                 batch = train[s:e]
                 self.cur_w = sess.run(update_w, feed_dict={
-                                 v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
+                    v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
                 self.cur_bias_vis = sess.run(update_vb, feed_dict={
-                                  v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
+                    v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
                 self.cur_bias_hid = sess.run(update_hb, feed_dict={
-                                  v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
+                    v0: batch, W: init_w, bias_vis: init_bias_vis, bias_hid: init_bias_hid})
                 init_w = self.cur_w
                 init_bias_vis = self.cur_bias_vis
                 init_bias_hid = self.cur_bias_hid
 
             current_loss = sess.run(err, feed_dict={
                 v0: train, W: self.cur_w, bias_vis: self.cur_bias_vis, bias_hid: self.cur_bias_hid
-            })  
+            })
 
-            test_loss = sess.run(err, feed_dict = {
-                v0: validation, W:self.cur_w, bias_vis: self.cur_bias_vis, bias_hid: self.cur_bias_hid
+            test_loss = sess.run(err, feed_dict={
+                v0: validation, W: self.cur_w, bias_vis: self.cur_bias_vis, bias_hid: self.cur_bias_hid
             })
 
             # print('epoch_nr: %i, train_loss: %.3f, test_loss: %.3f'
@@ -203,7 +205,7 @@ class RBM:
             os.mkdir(self.file_path)
         np.save(self.file_path+'/weights.npy', init_w)
         np.save(self.file_path+'/bias_vis.npy', init_bias_vis)
-        np.save(self.file_path+'/bias_hid.npy',init_bias_hid)
+        np.save(self.file_path+'/bias_hid.npy', init_bias_hid)
 
         plt.plot(train_loss, label="Train")
         plt.plot(valid_loss, label="Validation")
@@ -211,14 +213,13 @@ class RBM:
         plt.ylabel("Error")
         plt.savefig(self.file_path+"/error.png")
 
-
     def predict(self, user, read_file=None):
         """Predict ratings for all recipes of a user
-        
+
         @params:
             user: array
                 The input current ratings of a specific user
-                
+
         @returns:
             predicted: array
                 The predicted rating for a user
@@ -229,48 +230,53 @@ class RBM:
         W = tf.placeholder(tf.float32, [self.num_vis, self.num_hid])
 
         v0 = tf.placeholder(tf.float32, [None, self.num_vis])
-        
+
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
-        
+
         inputUser = user
         if read_file is not None:
-            filename = self.file_path 
+            filename = self.file_path
             self.cur_w = np.load(filename+'/weights.npy')
             self.cur_bias_vis = np.load(filename+'/bias_vis.npy')
             self.cur_bias_hid = np.load(filename+'/bias_hid.npy')
-        
+
         h0, sampled_h = self.visible_to_hidden(v0, W, bias_hid)
-        v1,_ = self.hidden_to_visible(h0, W, bias_vis)
-        hiden_activations = sess.run(h0, feed_dict={v0: inputUser, W: self.cur_w, bias_hid: self.cur_bias_hid})
-        recon_user = sess.run(v1, feed_dict={h0: hiden_activations, W: self.cur_w, bias_vis: self.cur_bias_vis})
-        
+        v1, _ = self.hidden_to_visible(h0, W, bias_vis)
+        hiden_activations = sess.run(
+            h0, feed_dict={v0: inputUser, W: self.cur_w,
+                           bias_hid: self.cur_bias_hid})
+        recon_user = sess.run(v1, feed_dict={
+                              h0: hiden_activations, W: self.cur_w,
+                              bias_vis: self.cur_bias_vis})
+
         return recon_user
 
-    
     def reccomend(self, all_interactions, user_id):
         """Reccomendation scores for a user
-        
+
         @params:
         all_interactions: dataframe
             The history of interactions of all users
         user_id: integer
             The id of the user to predict reccomendations for
-            
+
         @returns:
         scores: dataframe
-            Dataframe containing prediction scores for all recipes sorted descending
+            Dataframe containing prediction scores for all recipes 
+            sorted descending
         """
 
         user = all_interactions.loc[user_id].values
         pred_scores = self.predict([user])
-        pred_scores[0] = pred_scores[0] * (user==0)
-        scores = pd.DataFrame({'recipe_id': all_interactions.columns, 'scores': pred_scores})
+        pred_scores[0] = pred_scores[0] * (user == 0)
+        scores = pd.DataFrame(
+            {'recipe_id': all_interactions.columns, 'scores': pred_scores})
         return scores.sort_values('scores', ascending=False)
-    
+
     def write_recc_files(self):
-        
+
         interactions = self.interactions
         user_ids = interactions.index
         recipe_ids = interactions.columns
@@ -279,10 +285,12 @@ class RBM:
         preds = self.predict(data)
         pred_scores = pd.DataFrame(preds, columns=recipe_ids, index=user_ids).T
         for user_id in user_ids:
-            user_pred = pred_scores[[user_id]].sort_values(user_id, ascending=False)
+            user_pred = pred_scores[[user_id]].sort_values(
+                user_id, ascending=False)
             recipes_rec = user_pred.index[:10]
             recs.append(recipes_rec)
         reccomendations = pd.DataFrame(recs, columns=range(1, 11))
         reccomendations['user_id'] = user_ids
         cwd = os.getcwd()
-        reccomendations.to_csv(cwd + '/Data/reccomendations_rbm.csv', index=False)
+        reccomendations.to_csv(
+            cwd + '/Data/reccomendations_rbm.csv', index=False)

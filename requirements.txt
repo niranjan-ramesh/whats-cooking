@@ -1,6 +1,6 @@
 asyncio == 1.5.4
 pandas == 1.4.1
-requests == 2.27.1
+requests == 2.31.0
 matplotlib >= 3.5.0
 dataprep == 0.4.2
 beautifulsoup4
